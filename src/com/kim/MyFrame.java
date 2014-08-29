@@ -6,9 +6,11 @@ import java.awt.LayoutManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
@@ -18,18 +20,43 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.JPopupMenu;
+import java.awt.Component;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import javax.swing.JSeparator;
 
 public class MyFrame extends JFrame implements ActionListener{
 	
-	JTextArea ta;
+	private JTextArea ta;
+	private String sFilePath;
 	
+	public JTextArea getTa() {
+		return ta;
+	}
+
+	public void setTa(JTextArea ta) {
+		this.ta = ta;
+	}
+
+	public String getsFilePath() {
+		return sFilePath;
+	}
+
+	public void setsFilePath(String sFilePath) {
+		this.sFilePath = sFilePath;
+	}
+
 	public MyFrame(){
 		
 		JMenuBar mb = new JMenuBar();
 		setJMenuBar(mb);
 		mb.setVisible(true);
 		
-		getContentPane().setLayout(new BorderLayout());
+		BorderLayout borderLayout = new BorderLayout();
+		borderLayout.setVgap(5);
+		borderLayout.setHgap(5);
+		getContentPane().setLayout(borderLayout);
 		setBounds(0, 0, 800, 600);
 		setVisible(true);
 		setTitle("Hello Frame!");
@@ -38,50 +65,79 @@ public class MyFrame extends JFrame implements ActionListener{
 
 		
 		JMenu mn = new JMenu("文件");
+		mn.setMnemonic('F');
 		mb.add(mn);
-		//add(mn);
-		//mn.setVisible(true);
 		
-		JMenuItem mi = new JMenuItem("打开");
-		mn.add(mi);
+		JMenuItem openMi = new JMenuItem("打开");
+		mn.add(openMi);		
 		
-		ta = new JTextArea(100,100);
-		//ta.setVisible(true);
-		//getContentPane().add(ta);
-		//getContentPane().add(ta, BorderLayout.CENTER);
-		//ta.setAutoscrolls(true);
-		ta.setEditable(true);
-		ta.setText("XX");
+		JSeparator separator = new JSeparator();
+		mn.add(separator);
 		
-		JScrollPane sp = new JScrollPane(ta);
-		getContentPane().add(sp, BorderLayout.CENTER);
-		sp.setVisible(true);
+		//mn.();
 		
-		
-		mi.addActionListener(this);
-		
+		JMenuItem saveMi = new JMenuItem("保存");
+		mn.add(saveMi);		
 
-		//ta.setText("XX");
+		JScrollPane sp = new JScrollPane();
+		getContentPane().add(sp, BorderLayout.CENTER);
+		
+		ta = new JTextArea();
+		sp.setViewportView(ta);
+		
+		JPopupMenu popupMenu = new JPopupMenu();
+		addPopup(ta, popupMenu);
+		
+		JMenuItem popOpenMi = new JMenuItem("\u6253\u5F00");
+		popupMenu.add(popOpenMi);
+		
+		JSeparator separator_1 = new JSeparator();
+		popupMenu.add(separator_1);
+		
+		JMenuItem popSaveMi = new JMenuItem("\u4FDD\u5B58");
+		popupMenu.add(popSaveMi);
+		
+		
+		openMi.addActionListener(this);
+		saveMi.addActionListener(this);
+		popSaveMi.addActionListener(this);
+		popOpenMi.addActionListener(this);
 		
 	}
 	
 	public static void main(String[] args) {
 		MyFrame frame = new MyFrame();
+		frame.setVisible(true);
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		// TODO Auto-generated method stub
+		
+		//System.out.println(e.getActionCommand());
+		
+		if (e.getActionCommand().equals("打开")){
+			openFile();
+		}
+		else if (e.getActionCommand().equals("保存")){
+			saveFile();
+				
+		}		
+	}
+	
+	private void openFile(){
+		
 		FileDialog fd = new FileDialog(this, "Open File", FileDialog.LOAD);
 		fd.setVisible(true);
 		
 		if (fd.getFile() == null){
-			ta.setText("No file!");
+			getTa().setText("No file!");
+			setsFilePath(null);
 			return;
 		}
 			
 		
 		try {
+			String sfp = fd.getDirectory()+fd.getFile();
 			FileReader fr = new FileReader(fd.getDirectory()+fd.getFile());
 			BufferedReader isr = new BufferedReader(fr );
 			String ts;
@@ -90,7 +146,8 @@ public class MyFrame extends JFrame implements ActionListener{
 				sb.append(ts + "\n");
 			}
 			
-			ta.setText(sb.toString());
+			setsFilePath(sfp);
+			getTa().setText(sb.toString());
 			
 			isr.close();
 			fr.close();
@@ -99,8 +156,46 @@ public class MyFrame extends JFrame implements ActionListener{
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		
-		
 	}
+	
+	private void saveFile(){
+		
+		if (getsFilePath() == null){
+			return;
+		}
+		
+		//System.out.println(getTa().getText());
+		
+		try {
+			FileWriter fw = new FileWriter(getsFilePath());
+			BufferedWriter bw = new BufferedWriter(fw);
+			
+			bw.write(getTa().getText());
+			bw.close();
+			fw.close();
+			
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+	}
+	
 
+	private static void addPopup(Component component, final JPopupMenu popup) {
+		component.addMouseListener(new MouseAdapter() {
+			public void mousePressed(MouseEvent e) {
+				if (e.isPopupTrigger()) {
+					showMenu(e);
+				}
+			}
+			public void mouseReleased(MouseEvent e) {
+				if (e.isPopupTrigger()) {
+					showMenu(e);
+				}
+			}
+			private void showMenu(MouseEvent e) {
+				popup.show(e.getComponent(), e.getX(), e.getY());
+			}
+		});
+	}
 }
