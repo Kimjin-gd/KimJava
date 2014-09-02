@@ -25,6 +25,9 @@ import java.awt.Component;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.JSeparator;
+import javax.swing.KeyStroke;
+import java.awt.event.KeyEvent;
+import java.awt.event.InputEvent;
 
 public class MyFrame extends JFrame implements ActionListener{
 	
@@ -69,6 +72,9 @@ public class MyFrame extends JFrame implements ActionListener{
 		mb.add(mn);
 		
 		JMenuItem openMi = new JMenuItem("´ò¿ª");
+		openMi.setDisplayedMnemonicIndex(82);
+		openMi.setMnemonic(KeyEvent.VK_X);
+		openMi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_MASK));
 		mn.add(openMi);		
 		
 		JSeparator separator = new JSeparator();
